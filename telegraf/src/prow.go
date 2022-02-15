@@ -38,6 +38,7 @@ type Job struct {
 	id            string
 	state         string
 	state_int     int
+	flake_type	  string
 	log_url       string
 	log_yaml      string
 	log_artifacts string
@@ -45,9 +46,15 @@ type Job struct {
 	end_time      string
 	name          string
 	pull_request  string
-	job_type      string
-	cloud_profile string
-	test_type     string
+	job_type      string  // [ pr, periodic ]
+	cloud_profile string  // remove
+	log_job_name  string  // [ operator-e2e-aws-periodic-slack, operator-e2e-gcp-periodic-slack, operator-e2e, etc.]
+	test_type     string  // [ unit, index, e2e ]
+}
+
+type Flake struct {
+	e2eNotStartedLog  string // https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/periodic-ci-openshift-oadp-operator-master-4.8-operator-e2e-aws-periodic-slack/1493435130520276992/artifacts/operator-e2e-aws-periodic-slack/e2e/build-log.txt
+
 }
 
 var all_jobs = make(map[string]Job)
@@ -202,6 +209,11 @@ func getJobDetails(all_jobs map[string]Job) {
 			log.Fatal("Error loading HTTP response body. ", err)
 		}
 
+		//TODO
+		// Count the number children in #links-card
+		// if 3 periodic
+		// if 5 pr
+
 		// Get the Prow job YAML link
 		document.Find("#links-card > a:nth-child(2)").Each(func(i int, s *goquery.Selection) {
 			yaml_link, ok := s.Attr("href")
@@ -296,6 +308,10 @@ func getYAMLDetails(all_jobs map[string]Job) {
 		if status == "failure" {
 			if job.job_type == "periodic" {
 
+				// factor out this bit of code to a function
+				// getLogFile(log string){
+
+				//}
 				buid_log_url := job.log_artifacts + "artifacts/operator-e2e-" + job.cloud_profile + "-periodic-slack/e2e"
 				fmt.Println("@@@@@@@@@@@@" + buid_log_url)
 				buildlog_response, err := http.Get(buid_log_url)
