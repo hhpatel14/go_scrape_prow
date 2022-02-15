@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -44,6 +45,9 @@ type Job struct {
 	end_time      string
 	name          string
 	pull_request  string
+	job_type      string
+	cloud_profile string
+	test_type     string
 }
 
 var all_jobs = make(map[string]Job)
@@ -62,7 +66,7 @@ func main() {
 	var print_for_human bool
 
 	flag.StringVar(&url_to_scrape, "url_to_scrape", "https://prow.ci.openshift.org/?job=*oadp*", "prow url to scrape, e.g. ")
-	flag.BoolVar(&print_for_human, "print_for_human", false, "print for a human, not influxdb")
+	flag.BoolVar(&print_for_human, "print_for_human", false, "print for a human, not influxdb!!!!!")
 
 	flag.Parse()
 
@@ -173,7 +177,7 @@ func getProwJobs(g *geziyor.Geziyor, r *client.Response) {
 		id := u.Path[strings.LastIndex(u.Path, "/")+1:]
 		//log.Printf(id)
 
-		this_job := Job{id, "", 4, u.String(), "", "", "", "", "", "not_found"}
+		this_job := Job{id, "", 4, u.String(), "", "", "", "", "", "not_found", "", "", ""}
 		all_jobs[id] = this_job
 
 	})
@@ -245,35 +249,11 @@ func getYAMLDetails(all_jobs map[string]Job) {
 		if err != nil {
 			print_human_row(job)
 		}
-		status, err := yaml.Get("status").Get("state").String()
+
+		clusterProfile, err := yaml.Get("metadata").Get("labels").Get("ci-operator.openshift.io/cloud").String()
 		if err != nil {
 			print_human_row(job)
 		}
-
-		// get state
-		//  0 = success, 1 = pending, 2 = failure 3 = aborted, 4 = unknown
-		state_int := 4
-		state := ""
-		switch status {
-		case "success":
-			state_int = 0
-			state = "success"
-		case "pending":
-			state_int = 1
-			state = "pending"
-		case "failure":
-			state_int = 2
-			state = "failure"
-		case "aborted":
-			state_int = 3
-			state = "aborted"
-		default:
-			state_int = 4
-			state = "unknown"
-		}
-
-		job.state = state
-		job.state_int = state_int
 
 		name, _ := yaml.Get("metadata").Get("annotations").Get("prow.k8s.io/job").String()
 		if len(name) < 1 {
@@ -281,6 +261,13 @@ func getYAMLDetails(all_jobs map[string]Job) {
 			name = "name_not_found"
 			job.name = name
 		}
+
+		if strings.HasPrefix(name, "pull") {
+			job.job_type = "pull"
+		} else {
+			job.job_type = "periodic"
+		}
+
 		//log.Printf("name:" + name)
 
 		// Get Start / Stop time
@@ -293,9 +280,73 @@ func getYAMLDetails(all_jobs map[string]Job) {
 			print_human_row(job)
 		}
 
+		if clusterProfile == "azure4" {
+			clusterProfile = "azure"
+		}
+		job.cloud_profile = clusterProfile
 		job.start_time = start
 		job.end_time = end
 		job.name = name
+
+		status, err := yaml.Get("status").Get("state").String()
+		if err != nil {
+			print_human_row(job)
+		}
+
+		if status == "failure" {
+			if job.job_type == "periodic" {
+
+				buid_log_url := job.log_artifacts + "artifacts/operator-e2e-" + job.cloud_profile + "-periodic-slack/e2e"
+				fmt.Println("@@@@@@@@@@@@" + buid_log_url)
+				buildlog_response, err := http.Get(buid_log_url)
+				if err != nil {
+					print_human_row(job)
+				}
+				defer buildlog_response.Body.Close()
+
+				buidlog, err := io.ReadAll(buildlog_response.Body)
+				if err != nil {
+					print_human_row(job)
+				}
+				fmt.Println(string(buidlog))
+
+				if !strings.Contains(string(buidlog), "build_log.txt") {
+					status = "flake"
+				}
+
+			}
+			build_log_url := strings.TrimPrefix(job.log_url, "https://prow.ci.openshift.org/view/gs/")
+			fmt.Println("https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/" + build_log_url + "/artifacts/")
+
+		}
+		// get state
+		//  0 = success, 1 = pending, 2 = failure 3 = aborted, 4 = unknown
+		state_int := 10
+		state := ""
+		switch status {
+
+		case "success":
+			state_int = 0
+			state = "success"
+		case "pending":
+			state_int = 1
+			state = "pending"
+		case "failure":
+			state_int = 2
+			state = "failure"
+		case "aborted":
+			state_int = 3
+			state = "aborted"
+		case "flake":
+			state_int = 4
+			state = "flake"
+		default:
+			state_int = 10
+			state = "unknown"
+		}
+
+		job.state = state
+		job.state_int = state_int
 
 		// update object w/ success, failure status
 		all_jobs[id] = job
@@ -304,12 +355,13 @@ func getYAMLDetails(all_jobs map[string]Job) {
 
 func print_human(all_jobs map[string]Job) {
 	for _, my_job := range all_jobs {
-		fmt.Printf("%+v\n", my_job)
+		fmt.Printf("%+v\n\n\n", my_job)
 	}
 }
 
 func print_human_row(my_job Job) {
 	ErrorLogger.Printf("%+v\n", my_job)
+
 }
 
 func print_db(all_jobs map[string]Job) {
@@ -326,7 +378,7 @@ func print_db(all_jobs map[string]Job) {
 			break
 		}
 
-		if my_job.state_int == 4 {
+		if my_job.state_int == 10 {
 			// job state not known.
 			// this also causes duplicate entries for build_id
 			// the state is eventually written by prow and the job in question
