@@ -213,7 +213,14 @@ func getJobDetails(all_jobs map[string]Job) {
 		// Count the number children in #links-card
 		// if 3 periodic
 		// if 5 pr
-		fmt.Println("CHILDREN  $$$$$$$$$$")
+		var children = 0
+		document.Find("links-card  a").Each(func(i int, s *goquery.Selection) {
+			children = s.Children().Length()
+			fmt.Printf("children: %v\n", children)
+
+		})
+		fmt.Println(children)
+		fmt.Println("!!!@!!!@@!!!@@@!!@@@@!#@#@$%^&*()_(*&^%$#@!")
 
 		document.Find("#links-card > a").Map(func(i int, sel *goquery.Selection) string {
 			return fmt.Sprintf("%d: %s", i+1, sel.Text())
