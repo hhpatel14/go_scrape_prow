@@ -38,7 +38,7 @@ type Job struct {
 	id            string
 	state         string
 	state_int     int
-	flake_type	  string
+	flake_type    string
 	log_url       string
 	log_yaml      string
 	log_artifacts string
@@ -46,16 +46,16 @@ type Job struct {
 	end_time      string
 	name          string
 	pull_request  string
-	job_type      string  // [ pr, periodic ]
-	cloud_profile string  // remove
-	log_job_name  string  // [ operator-e2e-aws-periodic-slack, operator-e2e-gcp-periodic-slack, operator-e2e, etc.]
-	test_type     string  // [ unit, index, e2e ]
+	job_type      string // [ pr, periodic ]
+	cloud_profile string // remove
+	log_job_name  string // [ operator-e2e-aws-periodic-slack, operator-e2e-gcp-periodic-slack, operator-e2e, etc.]
+	test_type     string // [ unit, index, e2e ]
 }
 
-type Flake struct {
-	e2eNotStartedLog  string // https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/periodic-ci-openshift-oadp-operator-master-4.8-operator-e2e-aws-periodic-slack/1493435130520276992/artifacts/operator-e2e-aws-periodic-slack/e2e/build-log.txt
+// type Flake struct {
+// 	e2eNotStartedLog string // https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/periodic-ci-openshift-oadp-operator-master-4.8-operator-e2e-aws-periodic-slack/1493435130520276992/artifacts/operator-e2e-aws-periodic-slack/e2e/build-log.txt
 
-}
+// }
 
 var all_jobs = make(map[string]Job)
 var ErrorLogger *log.Logger
@@ -184,7 +184,7 @@ func getProwJobs(g *geziyor.Geziyor, r *client.Response) {
 		id := u.Path[strings.LastIndex(u.Path, "/")+1:]
 		//log.Printf(id)
 
-		this_job := Job{id, "", 4, u.String(), "", "", "", "", "", "not_found", "", "", ""}
+		this_job := Job{id, "", 4, u.String(), "", "", "", "", "", "not_found", "", "", "", "", ""}
 		all_jobs[id] = this_job
 
 	})
@@ -213,6 +213,11 @@ func getJobDetails(all_jobs map[string]Job) {
 		// Count the number children in #links-card
 		// if 3 periodic
 		// if 5 pr
+		fmt.Println("CHILDREN  $$$$$$$$$$")
+
+		document.Find("#links-card > a").Map(func(i int, sel *goquery.Selection) string {
+			return fmt.Sprintf("%d: %s", i+1, sel.Text())
+		})
 
 		// Get the Prow job YAML link
 		document.Find("#links-card > a:nth-child(2)").Each(func(i int, s *goquery.Selection) {
