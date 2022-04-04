@@ -2,3 +2,5 @@ prow
 cover.out
 cover.html
 geziyor
+go.mod
+go.sum
