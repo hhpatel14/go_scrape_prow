@@ -3,20 +3,19 @@
     "basicAuth":false,
     "basicAuthPassword":"",
     "basicAuthUser":"",
-    "database":"telegraf",
+    "database":"",
     "isDefault":false,
     "jsonData":{
-        "keepCookies":[]
+        "authType":"key"
     },
-    "name":"telegraf",
+    "name":"Google Sheets",
     "orgId":1,
     "password":"",
     "readOnly":false,
     "secureJsonFields":{},
-    "type":"influxdb",
+    "type":"grafana-googlesheets-datasource",
     "typeLogoUrl":"",
-    "uid":"XCyGUL8nk",
-    "url":"http://influxdb:8086",
+    "url":"",
     "user":"",
     "withCredentials":false
 }

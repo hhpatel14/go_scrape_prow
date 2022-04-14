@@ -3,20 +3,20 @@
     "basicAuth":false,
     "basicAuthPassword":"",
     "basicAuthUser":"",
-    "database":"telegraf",
+    "database":"rrcockpit",
     "isDefault":false,
     "jsonData":{
-        "keepCookies":[]
+        "keepCookies":[],
+        "timeInterval":"3m"
     },
-    "name":"telegraf",
+    "name":"mariadb",
     "orgId":1,
-    "password":"",
+    "password":"rrcockpit",
     "readOnly":false,
     "secureJsonFields":{},
-    "type":"influxdb",
+    "type":"mysql",
     "typeLogoUrl":"",
-    "uid":"XCyGUL8nk",
-    "url":"http://influxdb:8086",
-    "user":"",
+    "url":"mariadb:3306",
+    "user":"rrcockpit",
     "withCredentials":false
 }

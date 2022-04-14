@@ -5,7 +5,8 @@ admin_password=$GF_SECURITY_ADMIN_PASSWORD
 data_dir=/var/lib/grafana/
 api_key_name="grafana-sidecar"
 api_key_path=$data_dir/$api_key_name.api.key
-host=grafana:3000
+#host=grafana:3000
+host=localhost:8080
 api_url=http://$admin_user:$admin_password@$host
 
 # Wait a little for grafana to startup
