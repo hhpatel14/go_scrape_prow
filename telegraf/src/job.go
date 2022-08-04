@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	yaml3 "sigs.k8s.io/yaml"
 	"strconv"
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"github.com/PuerkitoBio/goquery"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	yaml3 "sigs.k8s.io/yaml"
 )
 
 type Job struct {
@@ -47,56 +46,86 @@ var all_jobs = make(map[string]Job)
 
 // if build-log.txt does not exist, then failure is FLAKE.
 func isFlake(job Job) bool {
-	if job.job_type == PERIODIC || strings.Contains(job.name, "periodic") {
-		buid_log_url := ""
-		if strings.Contains(job.name, "e2e") {
-			buid_log_url = job.log_artifacts + "artifacts/" + job.targetName + "/e2e/"
-		} else if strings.Contains(job.name, "unit") {
-			buid_log_url = job.log_artifacts + "artifacts/" + job.targetName + "/unit-periodic/"
-		} else {
-			return false
+	build_log_url := job.log_artifacts + "artifacts/" + job.targetName
+	if strings.Contains(job.name, "e2e") {
+		build_log_url += "/e2e/"
+	} else if strings.Contains(job.name, "unit") {
+		if job.job_type == PERIODIC || strings.Contains(job.name, "periodic") {
+			build_log_url += "/unit-periodic/"
+		} else if job.job_type == PULL || strings.Contains(job.name, "pull") {
+			build_log_url += "/unit/"
 		}
-		buildlog_response, err := http.Get(buid_log_url)
-		if err != nil {
-			print_human_row(job)
-			return false
-		}
-		defer buildlog_response.Body.Close()
-
-		buidlog, err := io.ReadAll(buildlog_response.Body)
-		if err != nil {
-			print_human_row(job)
-			return false
-		}
-		if strings.Contains(string(buidlog), "build-log.txt") {
-			return false
-		}
-	} else if job.job_type == PULL || strings.Contains(job.name, "pull") {
-		//artifacts/operator-e2e-gcp/e2e/
-		buid_log_url := ""
-		if strings.Contains(job.name, "e2e") {
-			buid_log_url = job.log_artifacts + "artifacts/" + job.targetName + "/e2e/"
-		} else if strings.Contains(job.name, "unit") {
-			buid_log_url = job.log_artifacts + "artifacts/" + job.targetName + "/unit/"
-		} else {
-			return false
-		}
-		buildlog_response, err := http.Get(buid_log_url)
-		if err != nil {
-			print_human_row(job)
-			return false
-		}
-		defer buildlog_response.Body.Close()
-
-		buidlog, err := io.ReadAll(buildlog_response.Body)
-		if err != nil {
-			print_human_row(job)
-			return false
-		}
-		if strings.Contains(string(buidlog), "build-log.txt") {
-			return false
-		}
+	} else {
+		return false
 	}
+	buildlog_response, err := http.Get(build_log_url)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+	defer buildlog_response.Body.Close()
+
+	buildlog, err := io.ReadAll(buildlog_response.Body)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+
+	if strings.Contains(string(buildlog), "build-log.txt") {
+		return false
+	}
+	return true
+}
+
+func isDeprovisioningFlake(job Job) bool {
+	build_log_url := job.log_artifacts + "build-log.txt"
+	buildlog_response, err := http.Get(build_log_url)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+	defer buildlog_response.Body.Close()
+
+	buildlog, err := io.ReadAll(buildlog_response.Body)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+
+	if !strings.Contains(string(buildlog), "Step phase test succeeded after") {
+		return false
+	}
+
+	build_log_url = job.log_artifacts + "artifacts/" + job.targetName
+	if strings.Contains(job.name, "e2e") {
+		build_log_url += "/e2e/"
+	} else if strings.Contains(job.name, "unit") {
+		if job.job_type == PERIODIC || strings.Contains(job.name, "periodic") {
+			build_log_url += "/unit-periodic/"
+		} else if job.job_type == PULL || strings.Contains(job.name, "pull") {
+			build_log_url += "/unit/"
+		}
+	} else {
+		return false
+	}
+	build_log_url += "build-log.txt"
+	buildlog_response, err = http.Get(build_log_url)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+	defer buildlog_response.Body.Close()
+
+	buildlog, err = io.ReadAll(buildlog_response.Body)
+	if err != nil {
+		print_human_row(job)
+		return false
+	}
+
+	if !strings.Contains(string(buildlog), "Test Suite Passed") {
+		return false
+	}
+
 	return true
 }
 
@@ -185,6 +214,8 @@ func getStatus(prowJob v1.ProwJob, job Job) string {
 	if status == "failure" {
 		if isFlake(job) {
 			status = "flake"
+		} else if isDeprovisioningFlake(job) {
+			status = "deprovisioning_flake"
 		}
 	}
 
@@ -205,6 +236,8 @@ func getStateInt(status string) int {
 		state_int = 3
 	case "flake":
 		state_int = 4
+	case "deprovisioning_flake":
+		state_int = 5
 	default:
 		state_int = 10
 	}

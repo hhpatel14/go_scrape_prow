@@ -1,0 +1,86 @@
+Data_to_Test:
+  - name: "Valid Deprovisioning Flake - e2e pull"
+    arg:
+      jobName: "pull-ci-openshift-oadp-operator-master-4.8-operator-e2e"
+      jobType: "pull"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_oadp-operator/608/pull-ci-openshift-oadp-operator-master-4.8-operator-e2e/1506330636531535872/"
+      jobState: "failure"
+      targetName: "operator-e2e"
+    want: true
+  - name: "Valid Non-Deprovisioning Flake - e2e periodic"
+    arg:
+      jobName: "periodic-ci-openshift-oadp-operator-master-4.9-operator-e2e-aws-periodic-slack"
+      jobType: "periodic"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_release/25366/rehearse-25366-periodic-ci-openshift-oadp-operator-master-4.9-operator-e2e-aws-periodic-slack/1498722881352241152/"
+      jobState: "failure"
+      jobCloud_profile: "aws"
+      targetName: "operator-e2e-aws-periodic-slack"
+    want: false
+  - name: "Valid Non-Deprovisioning Flake - e2e pull"
+    arg:
+      jobName: "rehearse-27052-pull-ci-openshift-oadp-operator-master-4.9-operator-e2e-azure"
+      jobType: "rehearse"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_release/27052/rehearse-27052-pull-ci-openshift-oadp-operator-master-4.9-operator-e2e-azure/1505907147571990528/"
+      jobState: "failure"
+      jobCloud_profile: "azure"
+      targetName: "operator-e2e-azure"
+    want: false
+  - name: "Valid Non-Deprovisioning Flake - unit periodic"
+    arg:
+      jobName: "periodic-ci-openshift-oadp-operator-master-4.8-operator-unit-test-periodic"
+      jobType: "periodic"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/periodic-ci-openshift-oadp-operator-master-4.8-operator-unit-test-periodic/1517352534933508096/"
+      jobState: "failure"
+      targetName: "operator-unit-test-periodic"
+    want: false
+  - name: "Valid Non-Deprovisioning Flake - unit pull"
+    arg:
+      jobName: "Positive for Unit Test - pull-unit-test"
+      jobType: "pull"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_oadp-operator/624/pull-ci-openshift-oadp-operator-master-4.7-operator-unit-test/1517182064560967680/"
+      jobState: "failure"
+      targetName: "operator-unit-test"
+    want: false
+  - name: "Valid Failure - e2e periodic"
+    arg:
+      jobName: "periodic-ci-openshift-oadp-operator-master-4.9-operator-e2e-aws-periodic-slack"
+      jobType: "periodic"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_release/25366/rehearse-25366-periodic-ci-openshift-oadp-operator-master-4.9-operator-e2e-aws-periodic-slack/1498722881352241152/"
+      jobState: "failure"
+      jobCloud_profile: "aws"
+      targetName: "operator-e2e-aws-periodic-slack"
+    want: false
+  - name: "Valid Failure - e2e pull"
+    arg:
+      jobName: "pull-ci-openshift-oadp-operator-master-4.7-operator-e2e-gcp"
+      jobType: "pull"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_oadp-operator/566/pull-ci-openshift-oadp-operator-master-4.7-operator-e2e-gcp/1513678249626963968/"
+      jobState: "failure"
+      jobCloud_profile: "gcp"
+      targetName: "operator-e2e-gcp"
+    want: false
+  - name: "Valid Failure - unit periodic"
+    arg:
+      jobName: "periodic-ci-openshift-oadp-operator-master-4.8-operator-unit-test-periodic"
+      jobType: "periodic"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/logs/periodic-ci-openshift-oadp-operator-master-4.8-operator-unit-test-periodic/1517352534933508096/"
+      jobState: "failure"
+      targetName: "operator-unit-test-periodic"
+    want: false
+  - name: "Valid Failure - unit pull"
+    arg:
+      jobName: "pull-ci-openshift-oadp-operator-master-4.7-operator-unit-test"
+      jobType: "pull"
+      jobLog_artifacts: "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/origin-ci-test/pr-logs/pull/openshift_oadp-operator/624/pull-ci-openshift-oadp-operator-master-4.7-operator-unit-test/1517182064560967680/"
+      jobState: "failure"
+      targetName: "operator-unit-test"
+    want: false
+  - name: "Invalid"
+    arg:
+      jobName: "rehearse-25366-periodic-ci-openshift-oadp-operator-master-4.9-operator-e2e-aws-periodic-slack"
+      jobType: "rehearse"
+      jobLog_artifacts: "abcd"
+      jobState: "failure"
+      jobCloud_profile: "aws"
+      targetName: "abc"
+    want: false
