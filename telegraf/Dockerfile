@@ -28,7 +28,7 @@ RUN cp /prow /usr/bin/prow
 # setup telegraf
 COPY telegraf.conf /etc/telegraf/telegraf.conf
 COPY telegraf.d/* /etc/telegraf/telegraf.d/
-RUN systemctl enable --now telegraf
+# RUN systemctl enable --now telegraf
 
 
 
