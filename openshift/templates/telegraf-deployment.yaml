@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: telegraf
+  name: telegraf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: telegraf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: telegraf
+        app: telegraf
+    spec:
+      containers:
+        - env:
+            - name: DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DATABASE
+                  name: telegraf-env
+            - name: HOST_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: HOST_NAME
+                  name: telegraf-env
+            - name: INFLUXDB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: INFLUXDB_HOST
+                  name: telegraf-env
+            - name: INFLUXDB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: INFLUXDB_PORT
+                  name: telegraf-env
+          image: image-registry.openshift-image-registry.svc:5000/go-scrape-prow/telegraf:latest
+          resources: {}
+          volumeMounts:
+            - mountPath: /tmp/telegraf
+              name: telegraf-volume
+      hostname: telegraf
+      restartPolicy: Always
+      volumes:
+        - name: telegraf-volume
+          persistentVolumeClaim:
+            claimName: telegraf-volume
+status: {}

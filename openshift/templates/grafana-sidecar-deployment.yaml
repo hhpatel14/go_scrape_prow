@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana-sidecar
+  name: grafana-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: grafana-sidecar
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: grafana-sidecar
+    spec:
+      containers:
+        - env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: admin
+          image: quay.io/hitpatel/grafana-sidecar:latest
+          name: grafana-sidecar
+          securityContext:
+            privileged: true
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-volume
+      restartPolicy: Always
+      volumes:
+        - name: grafana-volume
+          persistentVolumeClaim:
+            claimName: grafana-volume
+status: {}

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: influxdb
+  name: influxdb
+spec:
+  ports:
+    - name: port1
+      port: 8083
+      targetPort: port1
+    - name: port2
+      port: 8086
+      targetPort: port2
+    - name: port3
+      port: 8090
+      targetPort: port3
+  selector:
+    io.kompose.service: influxdb
+    app: prow
+status:
+  loadBalancer: {}

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: influxdb
+  name: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: influxdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: influxdb
+        app: prow
+    spec:
+      containers:
+        - env:
+            - name: INFLUXDB_DATA_INDEX_VERSION
+              value: tsi1
+          image: influxdb:1.7.1
+          name: influxdb
+          ports:
+            - name: port1 
+              containerPort: 8083
+            - name: port2
+              containerPort: 8086
+            - name: port3
+              containerPort: 8090
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/influxdb
+              name: influxdb-volume
+      restartPolicy: Always
+      volumes:
+        - name: influxdb-volume
+          persistentVolumeClaim:
+            claimName: influxdb-volume
+status: {}

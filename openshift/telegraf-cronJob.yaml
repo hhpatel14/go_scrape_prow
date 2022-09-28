@@ -1,0 +1,59 @@
+
+apiVersion: v1
+kind: List
+items:
+  - kind: Namespace
+    apiVersion: v1
+    metadata:
+      name: go-scrape-prow
+  - apiVersion: v1 
+    kind: ServiceAccount
+    metadata:
+      name: telegraf-sa
+      namespace: go-scrape-prow
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      namespace: go-scrape-prow
+      name: telegraf-cleanup-role
+    rules:
+    - apiGroups: [""]
+      resources: ["jobs", "pods", "pods/exec"]
+      verbs: ["list", "delete"]
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: telegraf-cleanup-rolebinding
+      namespace: go-scrape-prow
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: telegraf-cleanup-role
+    subjects:
+    - kind: ServiceAccount
+      name: telegraf-sa
+      namespace:
+  - apiVersion: batch/v1beta1
+    kind: CronJob
+    metadata:
+      name: jobs-cleanup
+    spec:
+      schedule: "* */20 * * *" 
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              serviceAccountName: telegraf-sa
+              containers:
+              - name: kubectl-container
+                image: bitnami/kubectl:latest
+                # I'm using bitnami kubectl, because the suggested kubectl image didn't had the `field-selector` option
+                command: ["sh", "-c", "kubectl delete pods -l app=telegraf -n go-scrape-prow"]
+              restartPolicy: OnFailure
+
+
+# 1. Create namespace
+# 2. Create a service account
+# 3. Create a role
+# 4. Attach the role to the service account
+# 5. Create a cronjob (with a crontab schedule) using the service account to check for completed jobs

@@ -1,0 +1,43 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: grafana-sidecar
+  namespace: go-scrape-prow
+  labels:
+    app: grafana-sidecar
+    app.kubernetes.io/component: grafana-sidecar
+    app.kubernetes.io/instance: grafana-sidecar
+    app.kubernetes.io/name: grafana-sidecar
+    app.kubernetes.io/part-of: go-scrape-prow
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'grafana-sidecar:latest'
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/hhpatel14/go_scrape_prow.git'
+    contextDir: /grafana
+    sourceSecret:
+      name: openshift
+  triggers:
+    - type: Generic
+      generic:
+        secretReference:
+          name: grafana-sidecar-generic-webhook-secret
+    - type: GitHub
+      github:
+        secretReference:
+          name: grafana-sidecar-github-webhook-secret
+    - type: ConfigChange
+  runPolicy: Serial
