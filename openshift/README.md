@@ -11,7 +11,7 @@
 	
 Optional: Add webhook to your repo. Using buildConfig details copy webhook URL with secret 
 ### Deploy elements of go-scrape-prow 
-	oc apply -f go-scrape-prow.yaml 
+	oc apply -f go-scrape-prow-template.yaml
 Influx, grafana, and telegraf pods should be up and running. 
 
 
