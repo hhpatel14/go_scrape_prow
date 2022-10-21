@@ -1,8 +1,5 @@
-## This template has:
-## Namespace go-scrape-prow,
-## influx --> Deployment, service, and persistentvolumeClaim 
-## telegraf --> Deployment, Configmap, and persistentVolumeClaim
-## grafana --> Deployment, Configmap, Service, PersistentVolumeClaim, and Route 
+
+
 apiVersion: v1
 kind: List
 items:
@@ -149,7 +146,7 @@ items:
                     configMapKeyRef:
                       key: INFLUXDB_PORT
                       name: telegraf-env
-              image: image-registry.openshift-image-registry.svc:5000/go-scrape-prow/telegraf@sha256:22f7ced54e2761770d910f6877ab7df5829d86612c5f7af91127d9a6da7ca406
+              image: image-registry.openshift-image-registry.svc:5000/go-scrape-prow/telegraf:latest
               name: telegraf
               resources: {}
               volumeMounts:
@@ -163,6 +160,7 @@ items:
                 claimName: telegraf-volume
     status: {}
   - kind: ConfigMap
+    apiVersion: v1
     data:
       DATABASE: telegraf
       HOST_NAME: telegraf
@@ -326,3 +324,9 @@ items:
         name: grafana
       port:
         targetPort: front
+
+## This template has:
+## Namespace go-scrape-prow,
+## influx --> Deployment, service, and persistentvolumeClaim 
+## telegraf --> Deployment, Configmap, and persistentVolumeClaim
+## grafana --> Deployment, Configmap, Service, PersistentVolumeClaim, and Route 
