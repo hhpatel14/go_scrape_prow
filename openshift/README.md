@@ -1,17 +1,14 @@
 ### Clone “go-scrape-prow” and cd go-scrape-prow/openshift
 ### Create new project  
 	oc new-project go-scrape-prow
-### Create Source Crecret 
- 1. Add a new SSH key to your Github. [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
- 2. Create a new source secret in your cluster 
- 3. Click on workloads → Secrets
- 4. Navigate to project “go-scrape-prow”  and click on Create (button on the upper right corner) 
 
- ![Screen Shot 2022-10-19 at 3 29 33 PM](https://user-images.githubusercontent.com/83228833/196795319-187a0493-aa06-462f-accc-7b6560dd3b79.png)
-
-
-### Build telegraf and grafanaSidecar
+### BuildConfig/ImageStream of telegraf and grafanaSidecar
 	oc apply -f buildConfig.yaml
+	
+### Start telegraf and grafanaSidecar build
+	oc start-build telegraf
+	oc start-build grafana-sidecar
+	
 Optional: Add webhook to your repo. Using buildConfig details copy webhook URL with secret 
 ### Deploy elements of go-scrape-prow 
 	oc apply -f go-scrape-prow.yaml 
