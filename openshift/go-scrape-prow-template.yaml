@@ -241,7 +241,7 @@ items:
               image: grafana/grafana:8.4.6
               name: grafana
               securityContext:
-                privileged : true
+                privileged : false
               ports:
                 - name: front 
                   containerPort: 3000
@@ -255,7 +255,7 @@ items:
               image: image-registry.openshift-image-registry.svc:5000/go-scrape-prow/grafana-sidecar:latest
               name: grafana-sidecar
               securityContext:
-                privileged: true
+                privileged: false
               resources: {}
               volumeMounts:
                 - mountPath: /var/lib/grafana
